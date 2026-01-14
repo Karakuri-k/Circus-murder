@@ -1,8 +1,30 @@
-maleNames = ["Martin", "Magnus", "Mathias", "Askil", "Rasmus", "Judas", "Jesus", "Egil", "Niels", "Bjørn", "Jonas", "Jon", "Tord", "Jeppe"]
+femaleNames = [
+    "Rosalinda", "Evangeline", "Colette", "Delilah", "Vivienne",
+    "Celeste", "Marlene", "Giselle", "Josephine", "Beatrice",
+    "Margot", "Odette", "Simone", "Claudette", "Yvette",
+    "Antoinette", "Esmeralda", "Violetta", "Carmela", "Lucia"
+]
 
-femaleNames = ["Karen", "Klara", "Bertine", "Marie", "Emmy", "Maren", "Kjersti", "Linnea", "Iselin", "Anna", "Øyvor", "Tirill", "Maria"]
+maleNames = [
+    "Augustus", "Marcel", "Dimitri", "Sergio", "Lorenzo",
+    "Viktor", "Claude", "Enzo", "Matteo", "Felix",
+    "Nikolai", "Raphael", "Dante", "Giovanni", "Marcello",
+    "Lucian", "Valentino", "Boris", "Antonio", "Salvatore"
+]
 
-lastNames = ["Uvaag-Danielsen", "Kurisaki-Sagberg", "Lohsen Lystad", "Aas Bjerkestrand", "Kro", "Vågslid Haga", "Flydal Jenstad", "Graver", "Pils", "Heen", "Graver", "Jonstang", "Rego", "Lie", "Golimo", "Blomquist"]
+lastNames = [
+    "Bellini", "Marchand", "Volkov", "Rossi", "Moretti",
+    "Dubois", "Santoro", "Fontaine", "Romano", "Petrov",
+    "Lombardi", "Rousseau", "Delacroix", "Marinelli", "Novak",
+    "Castillo", "Ferretti", "Lebedev", "Montoya", "Salvatori"
+]
+
+titles = [
+    "Ringmaster", "Acrobat", "Trapeze Artist", "Tightrope Walker", "Clown",
+    "Strongman", "Contortionist", "Fire Breather", "Knife Thrower", "Juggler",
+    "Animal Trainer", "Magician", "Fortune Teller", "Trick Rider", "Aerial Silks Performer",
+    "Human Cannonball", "Stilt Walker", "Sword Swallower", "Escape Artist", "Wire Walker"
+]
 
 listPlaces = ["Lobby", "Room 1", "Room 2", "Room 3", "Room 4", "Room 5", "Room 6", "Room 7", "Room 8", "Room 9", "Room 10", "Dining room", "Lavatories", "Circus tent", "Circus carriage", "Circus backroom"]
 

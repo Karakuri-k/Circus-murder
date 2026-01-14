@@ -1,13 +1,16 @@
 from lists import *
 import random as rd
+from constants import *
 
+selectedNames = rd.sample(maleNames + femaleNames, numPeople)
+selectedTitles = rd.sample(titles, numPeople)
 class Evening:
     def __init__(self) -> None:
         self.start = "13:00"
         self.end = "23:30"
         self.timestamps = self.generateTimestamps(self.start, self.end)
         self.locations = self.generateLocations(5)
-        self.characters = self.generateCharacters(7)
+        self.characters = self.generateCharacters(numPeople)
 
     def generateTimestamps(self, start, end, intervalMinutes = 30):
         def timeToMinutes(timeStr):
@@ -49,44 +52,61 @@ class Evening:
     def generateCharacters(self, numberOfCharacters):
         listOfCharacters = []
 
-        for character in range(numberOfCharacters):
+        for i in range(numberOfCharacters):
             alibi = self.generateAlibis()
-            listOfCharacters.append(Person(alibi))
+            listOfCharacters.append(Person(selectedNames[i], alibi, selectedTitles[i]))
+
 
         murderTime = rd.choice(self.timestamps[:-1])
         crimeScene = rd.choice(self.locations)
         murderIndex = self.timestamps.index(murderTime)
 
         murderer = rd.choice(listOfCharacters)
+        victim = rd.choice([character for character in listOfCharacters if character != murderer])
 
         murderer.isMurderer = True
+        victim.isVictim = True
+
         self.murderer = murderer
+        self.victim = victim
+
         self.murderTime = murderTime
+        murderer.timeToLie = []
+
         self.crimeScene = crimeScene
         murderer.alibiSchedule[murderTime] = crimeScene #gjør morderen sin location til crime scene
+        victim.alibiSchedule[murderTime] = crimeScene
         criticalTimestamps = self.timestamps[murderIndex:] #tiden fra drap til kroppen blir funnet
 
-        for character in listOfCharacters:
+        for timestamp in criticalTimestamps:
+            for character in listOfCharacters:
+                if character != murderer:
+                    if character.alibiSchedule[timestamp] == crimeScene:
+                        other_locations = [loc for loc in self.locations if loc != crimeScene]
+                        character.alibiSchedule[timestamp] = rd.choice(other_locations) #gjør alle andres locations hvis de er i crime scene før kroppen blir funnet til et annet sted
+                if character == victim:
+                    character.alibiSchedule[timestamp] = crimeScene 
+                if character == murderer:
+                    if character.alibiSchedule[timestamp] == crimeScene:
+                        murderer.timeToLie.append(timestamp)
+
+        """for character in listOfCharacters:
             if character != murderer:
                 for timestamp in criticalTimestamps:
                     if character.alibiSchedule[timestamp] == crimeScene:
                         other_locations = [loc for loc in self.locations if loc != crimeScene]
-                        character.alibiSchedule[timestamp] = rd.choice(other_locations)
-
-                        #gjør alle andres locations hvis de er i crime scene før kroppen blir funnet til et annet sted
+                        character.alibiSchedule[timestamp] = rd.choice(other_locations) #gjør alle andres locations hvis de er i crime scene før kroppen blir funnet til et annet sted
+                    if character == victim:
+                        character.alibiSchedule[timestamp] = crimeScene """
         return listOfCharacters
         
 
 
 class Person:
-    def __init__(self, alibiSchedule, isMurderer = False) -> None:
-        x = rd.randint(1, 2)
-        if x == 1:
-            self.firstName = maleNames[rd.randint(0, len(maleNames)-1)]
-        else:
-            self.firstName = femaleNames[rd.randint(0, len(femaleNames)-1)]
-
-        self.lastName = lastNames[rd.randint(0, len(lastNames)-1)] 
+    def __init__(self, firstName, alibiSchedule, title, isMurderer = False, isVictim = False) -> None:
+        self.title = title
+        self.firstName = firstName
+        self.lastName = rd.choice(lastNames)
         self.fullName:str = self.firstName + " " + self.lastName
         self.alibiSchedule = alibiSchedule
         self.isMurderer = isMurderer
@@ -97,17 +117,14 @@ class Person:
             
 
     def __repr__(self) -> str:
-        return self.fullName
+        return self.title + " " + self.fullName
 
 class Suspect(Person):
-    def __init__(self, alibiSchedule) -> None:
-        super().__init__(alibiSchedule)
+    def __init__(self, firstName, alibiSchedule, title) -> None:
+        super().__init__(firstName, alibiSchedule, title)
 
-"""class Victim(Person):
-    def __init__(self, name, timeOfDeath) -> None:
-        super().__init__()
-        self.timeOfDeath = timeOfDeath"""
 
 class Murderer(Suspect):
-    def __init__(self, alibiSchedule, timeToLie:str) -> None:
-        super().__init__(alibiSchedule)
+    def __init__(self, firstName, alibiSchedule, title, timeToLie:list) -> None:
+        super().__init__(firstName, alibiSchedule, title)
+        self.timeToLie = timeToLie

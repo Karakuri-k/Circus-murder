@@ -15,3 +15,5 @@ VINDU_HOYDE = 650
 FPS = 60
 
 GRAVITASJON = 0.2
+
+numPeople = 7
