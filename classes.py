@@ -89,15 +89,6 @@ class Evening:
                 if character == murderer:
                     if character.alibiSchedule[timestamp] == crimeScene:
                         murderer.timeToLie.append(timestamp)
-
-        """for character in listOfCharacters:
-            if character != murderer:
-                for timestamp in criticalTimestamps:
-                    if character.alibiSchedule[timestamp] == crimeScene:
-                        other_locations = [loc for loc in self.locations if loc != crimeScene]
-                        character.alibiSchedule[timestamp] = rd.choice(other_locations) #gjør alle andres locations hvis de er i crime scene før kroppen blir funnet til et annet sted
-                    if character == victim:
-                        character.alibiSchedule[timestamp] = crimeScene """
         return listOfCharacters
         
 
