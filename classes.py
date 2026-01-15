@@ -88,13 +88,14 @@ class Evening:
                     character.alibiSchedule[timestamp] = crimeScene 
                 if character == murderer:
                     if character.alibiSchedule[timestamp] == crimeScene:
-                        murderer.timeToLie.append(timestamp)
+                        self.murderer.timeToLie.append(timestamp)
         return listOfCharacters
         
 
 
 class Person:
-    def __init__(self, firstName, alibiSchedule, title, isMurderer = False, isVictim = False) -> None:
+    def __init__(self, firstName, alibiSchedule, title, isMurderer = False, isVictim = False, timeToLie = []) -> None:
+        self.timeToLie = timeToLie
         self.title = title
         self.firstName = firstName
         self.lastName = rd.choice(lastNames)
@@ -104,23 +105,36 @@ class Person:
 
 
     def whereWereYou(self, time, b:Evening):
-        together = []
-        for character in b.characters:
-            if character.alibiSchedule[time] == self.alibiSchedule[time]:
-                together.append(character)
-    
-        if len(together) == 0:
-            return f"At {time}, I was in the {self.alibiSchedule[time]}. I was alone."
-        elif len(together) == 1:
-            return f"At {time}, I was in the {self.alibiSchedule[time]} with {together[0]}."
-        else:
-            togetherString = ", ".join(str(char) for char in together[:-1]) + f" and {together[-1]}"
-            return f"At {time}, I was in the {self.alibiSchedule[time]} with {togetherString}."
+        if self.isMurderer and time in self.timeToLie:
+            randomLocation = rd.choice([loc for loc in b.locations if loc != b.crimeScene])
+            availablePeople = [char for char in b.characters if char != self and char != b.victim]
+            randomNumber = rd.randint(0, len(availablePeople))
+            randomPeople = rd.sample(availablePeople, randomNumber) if randomNumber > 0 else []
 
-            
+            if len(randomPeople) == 0:
+                return f"At {time}, I was in the {randomLocation}. I was alone."
+            elif len(randomPeople) == 1:
+                return f"At {time}, I was in the {randomLocation} with {randomPeople[0]}."
+            else:
+                murdererWhereWereYou = ", ".join(str(char) for char in randomPeople[:-1]) + f" and {randomPeople[-1]}"
+                return f"At {time}, I was in the {randomLocation} with {murdererWhereWereYou}."
+        else:   
+            together = []
+            for character in b.characters:
+                if character.alibiSchedule[time] == self.alibiSchedule[time]:
+                    together.append(character)
+            if len(together) == 0:
+                return f"At {time}, I was in the {self.alibiSchedule[time]}. I was alone."
+            elif len(together) == 1:
+                return f"At {time}, I was in the {self.alibiSchedule[time]} with {together[0]}."
+            else:
+                togetherString = ", ".join(str(char) for char in together[:-1]) + f" and {together[-1]}"
+                return f"At {time}, I was in the {self.alibiSchedule[time]} with {togetherString}."
+
+                
 
     def __repr__(self) -> str:
-        return self.title + " " + self.fullName
+        return f"{self.title} {self.fullName}"
 
 class Suspect(Person):
     def __init__(self, firstName, alibiSchedule, title) -> None:
@@ -131,3 +145,5 @@ class Murderer(Suspect):
     def __init__(self, firstName, alibiSchedule, title, timeToLie:list) -> None:
         super().__init__(firstName, alibiSchedule, title)
         self.timeToLie = timeToLie
+
+    
