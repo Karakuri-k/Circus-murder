@@ -103,8 +103,20 @@ class Person:
         self.isMurderer = isMurderer
 
 
-    def whereWereYou(self, time):
-        pass
+    def whereWereYou(self, time, b:Evening):
+        together = []
+        for character in b.characters:
+            if character.alibiSchedule[time] == self.alibiSchedule[time]:
+                together.append(character)
+    
+        if len(together) == 0:
+            return f"At {time}, I was in the {self.alibiSchedule[time]}. I was alone."
+        elif len(together) == 1:
+            return f"At {time}, I was in the {self.alibiSchedule[time]} with {together[0]}."
+        else:
+            togetherString = ", ".join(str(char) for char in together[:-1]) + f" and {together[-1]}"
+            return f"At {time}, I was in the {self.alibiSchedule[time]} with {togetherString}."
+
             
 
     def __repr__(self) -> str:

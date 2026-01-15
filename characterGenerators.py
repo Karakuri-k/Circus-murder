@@ -31,3 +31,5 @@ pprint(b.murderer.alibiSchedule)
 print("the victim's schedule is:")
 pprint(b.victim.alibiSchedule)
 print(b.murderer.timeToLie)
+
+print(b.murderer.whereWereYou("14:00", b))
