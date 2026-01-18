@@ -130,7 +130,20 @@ class Person:
             else:
                 togetherString = ", ".join(str(char) for char in together[:-1]) + f" and {together[-1]}"
                 return f"At {time}, I was in the {self.alibiSchedule[time]} with {togetherString}."
+    def haveYouSeen(self, person:Person, b:Evening):
+        seen = []
+        for time in b.timestamps:
+            if person.alibiSchedule[time] == self.alibiSchedule[time]:
+                seen.append(time)
 
+        if len(seen) == 0:
+            return f"No, I don't believe i have seen {person} all night."
+        elif len(seen) == 1:
+            return f"Yes, I saw them once in {self.alibiSchedule[seen[0]]} at {seen[0]} o'clock."
+        else: 
+            sightings = [f"in the {self.alibiSchedule[time]} at {time}" for time in seen[:-1]]
+            sightingsString = ", ".join(sightings)  + f" and in the {self.alibiSchedule[seen[-1]]} at {seen[-1]}"
+            return f"Yes, I saw them {sightingsString}"
                 
 
     def __repr__(self) -> str:
