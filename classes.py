@@ -66,6 +66,10 @@ class Evening:
 
         murderer.isMurderer = True
         victim.isVictim = True
+        murderer.motive = True
+        motives = rd.sample(listOfCharacters, 3)
+        for character in motives:
+            character.motive = True
 
         self.murderer = murderer
         self.victim = victim
@@ -94,7 +98,7 @@ class Evening:
 
 
 class Person:
-    def __init__(self, firstName, alibiSchedule, title, isMurderer = False, isVictim = False, timeToLie = []) -> None:
+    def __init__(self, firstName, alibiSchedule, title, isMurderer = False, isVictim = False, motive = False, timeToLie = []) -> None:
         self.timeToLie = timeToLie
         self.title = title
         self.firstName = firstName
@@ -102,6 +106,7 @@ class Person:
         self.fullName:str = self.firstName + " " + self.lastName
         self.alibiSchedule = alibiSchedule
         self.isMurderer = isMurderer
+        self.motive = motive
 
 
     def whereWereYou(self, time, b:Evening):
@@ -130,6 +135,7 @@ class Person:
             else:
                 togetherString = ", ".join(str(char) for char in together[:-1]) + f" and {together[-1]}"
                 return f"At {time}, I was in the {self.alibiSchedule[time]} with {togetherString}."
+            
     def haveYouSeen(self, person:Person, b:Evening):
         seen = []
         for time in b.timestamps:
@@ -148,6 +154,11 @@ class Person:
             sightingsString = ", ".join(sightings)  + f" and in the {self.alibiSchedule[seen[-1]]} at {seen[-1]}"
             return f"Yes, I saw them {sightingsString}"
                 
+    def haveMotive(self, person:Person, b:Evening):
+        if person.motive == False:
+            return f"As far as I know {b.victim} was on good terms with {person}"
+        else:
+            return f"I've heard {b.victim} and {person} weren't on the best of terms"
 
     def __repr__(self) -> str:
         return f"{self.title} {self.fullName}"

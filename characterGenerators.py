@@ -34,3 +34,4 @@ print(b.murderer.timeToLie)
 
 print(b.murderer.whereWereYou("14:00", b))
 print(b.murderer.haveYouSeen(b.victim, b))
+print(b.characters[0].haveMotive(b.characters[2], b))
