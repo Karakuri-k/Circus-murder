@@ -1,6 +1,8 @@
 import pygame as pg
 from constants import *
 import os
+from classes import *
+import random as rd
 
 pg.init()
 vindu = pg.display.set_mode([VINDU_BREDDE, VINDU_HOYDE])
@@ -43,8 +45,74 @@ mål_kamera_x = kamera_x
 mål_kamera_y = kamera_y
 
 
+class SuspectSprite:
+    def __init__(self, x, y, person, bredde=60, høyde=100):
+        self.x = x
+        self.y = y
+        self.bredde = bredde
+        self.høyde = høyde
+        self.person = person  # The Person object from your Evening class
+        self.farge = person.color  # Random color for each suspect
+        self.outline_farge = tuple(c // 2 for c in self.farge)  # Darker version
+        
+    def draw(self, vindu):
+        """Tegner suspect sprite på skjermen"""
+        # Tegn skygge
+        skygge_offset = 3
+        pg.draw.rect(vindu, (0, 0, 0, 100),
+                     (self.x - self.bredde // 2 + skygge_offset,
+                     self.y - self.høyde // 2 + skygge_offset,
+                     self.bredde,
+                     self.høyde))
+        
+        # Tegn hovedrektangel
+        pg.draw.rect(vindu, self.farge,
+                     (self.x - self.bredde // 2,
+                      self.y - self.høyde // 2,
+                      self.bredde,
+                      self.høyde))
+        
+        # Tegn outline
+        pg.draw.rect(vindu, self.outline_farge,
+                     (self.x - self.bredde // 2,
+                      self.y - self.høyde // 2,
+                      self.bredde,
+                      self.høyde), 3)
+        
+        # Tegn øyne
+        øye_farge = (255, 255, 255)
+        øye_størrelse = 6
+        øye_y = self.y - 20
+        
+        # Venstre øye
+        pg.draw.circle(vindu, øye_farge,
+                       (int(self.x - 10), int(øye_y)), øye_størrelse)
+        pg.draw.circle(vindu, (0, 0, 0),
+                       (int(self.x - 10), int(øye_y)), øye_størrelse // 2)
+        
+        # Høyre øye
+        pg.draw.circle(vindu, øye_farge,
+                       (int(self.x + 10), int(øye_y)), øye_størrelse)
+        pg.draw.circle(vindu, (0, 0, 0),
+                       (int(self.x + 10), int(øye_y)), øye_størrelse // 2)
+        
+        # Tegn navn under sprite
+        font = pg.font.Font(None, 24)
+        name_text = font.render(str(self.person), True, WHITE)
+        name_rect = name_text.get_rect(center=(self.x, self.y + self.høyde // 2 + 20))
+        
+        # Bakgrunn bak navnet
+        bg_rect = name_rect.inflate(10, 5)
+        s = pg.Surface((bg_rect.width, bg_rect.height), pg.SRCALPHA)
+        s.fill((0, 0, 0, 180))
+        vindu.blit(s, bg_rect.topleft)
+        
+        # Tegn navnet
+        vindu.blit(name_text, name_rect)
+
+
 class Door:
-    def __init__(self, x, y, bredde, høyde, navn="Dør", bakgrunn_fil=None) -> None:
+    def __init__(self, x, y, bredde, høyde, navn="Dør", bakgrunn_fil=None, suspect=None) -> None:
         self.x = x  # Verden-koordinater
         self.y = y
         self.bredde = bredde
@@ -57,6 +125,7 @@ class Door:
         self.is_aktiv = False
         self.er_åpnet = False
         self.interaksjons_avstand = 100  # Hvor nær karakteren må være
+        self.suspect = suspect
 
     def get_rect(self):
         """Returnerer rektangel i verden-koordinater"""
@@ -111,7 +180,6 @@ class Door:
 
             # Tegn teksten
             vindu.blit(e_text, e_rect)
-
 
 class Character:
     def __init__(self, x, y, bredde=50, høyde=80):
@@ -176,22 +244,26 @@ def synk_kamera_med_karakter(karakter_x, verden_bredde):
 
 def main():
     global kamera_x, kamera_y, mål_kamera_x, mål_kamera_y, bakgrunn, ny_bredde, ny_hoyde
+
+    evening = Evening()
+
     running = True
     smooth_hastighet = 0.15  # For smooth kamerabevegelse
     vis_rektangler = True  # Toggle for å vise/skjule rektangler
     current_background = MAIN_BACKGROUND  # Hold styr på gjeldende bakgrunn
     i_rom = False
     åpen_dør = None
+    current_suspect = None
 
     # Opprett noen eksempel-dører med forskjellige bakgrunner
     # Alle dører åpner samme rom-fil
     dører = [
-        Door(100, 250, 225, 475, "Dør 1", "photos/room1.png"),
-        Door(420, 250, 215, 475, "Dør 2", "photos/room.png"),
-        Door(730, 250, 215, 475, "Dør 3", "photos/room.png"),
-        Door(1020, 250, 215, 475, "Dør 4", "photos/room.png"),
-        Door(1320, 250, 215, 475, "Dør 5", "photos/room.png"),
-        Door(1620, 250, 215, 475, "Dør 6", "photos/room.png"),
+        Door(100, 250, 225, 475, "Dør 1", "photos/room1.png", evening.characters[0]),
+        Door(420, 250, 215, 475, "Dør 2", "photos/room.png", evening.characters[1]),
+        Door(730, 250, 215, 475, "Dør 3", "photos/room.png", evening.characters[2]),
+        Door(1020, 250, 215, 475, "Dør 4", "photos/room.png", evening.characters[3]),
+        Door(1320, 250, 215, 475, "Dør 5", "photos/room.png", evening.characters[4]),
+        Door(1620, 250, 215, 475, "Dør 6", "photos/room.png", evening.characters[5]),
     ]
 
     # Opprett karakter i midten av verden
@@ -226,6 +298,12 @@ def main():
                                     ny_hoyde = VINDU_HOYDE
 
                                     current_background = ny_bakgrunn_fil
+
+                                    current_suspect = SuspectSprite(
+                                        VINDU_BREDDE // 2,  # Center of screen
+                                        VINDU_HOYDE // 2,   # Center of screen
+                                        dør.suspect
+                                    )
                                     i_rom = True
                                     åpen_dør = dør
                                     kamera_x = 0
@@ -242,6 +320,7 @@ def main():
                                     ny_hoyde = bakgrunn.get_height()
                                     current_background = MAIN_BACKGROUND
 
+                                    current_suspect = None 
                                     i_rom = False
                                     åpen_dør = None
 
@@ -323,6 +402,9 @@ def main():
             dør.draw(vindu, kamera_x, kamera_y, vis_rektangler)
 
         if i_rom:
+            if current_suspect:
+                current_suspect.draw(vindu)
+
             pg.display.flip()
             clock.tick(FPS)
             continue

@@ -51,10 +51,10 @@ class Evening:
 
     def generateCharacters(self, numberOfCharacters):
         listOfCharacters = []
-
+        currentColor = rd.sample(FARGER, numberOfCharacters)
         for i in range(numberOfCharacters):
             alibi = self.generateAlibis()
-            listOfCharacters.append(Person(selectedNames[i], alibi, selectedTitles[i]))
+            listOfCharacters.append(Person(selectedNames[i], alibi, selectedTitles[i],currentColor[i]))
 
 
         murderTime = rd.choice(self.timestamps[:-1])
@@ -98,7 +98,7 @@ class Evening:
 
 
 class Person:
-    def __init__(self, firstName, alibiSchedule, title, isMurderer = False, isVictim = False, motive = False, timeToLie = []) -> None:
+    def __init__(self, firstName, alibiSchedule, title, farge, isMurderer = False, isVictim = False, motive = False, timeToLie = []) -> None:
         self.timeToLie = timeToLie
         self.title = title
         self.firstName = firstName
@@ -107,6 +107,7 @@ class Person:
         self.alibiSchedule = alibiSchedule
         self.isMurderer = isMurderer
         self.motive = motive
+        self.color = farge
 
 
     def whereWereYou(self, time, b:Evening):
@@ -164,13 +165,13 @@ class Person:
         return f"{self.title} {self.fullName}"
 
 class Suspect(Person):
-    def __init__(self, firstName, alibiSchedule, title) -> None:
-        super().__init__(firstName, alibiSchedule, title)
+    def __init__(self, firstName, alibiSchedule, title, farge) -> None:
+        super().__init__(firstName, alibiSchedule, title, farge)
 
 
 class Murderer(Suspect):
-    def __init__(self, firstName, alibiSchedule, title, timeToLie:list) -> None:
-        super().__init__(firstName, alibiSchedule, title)
+    def __init__(self, firstName, alibiSchedule, title, farge, timeToLie:list) -> None:
+        super().__init__(firstName, alibiSchedule, title, farge)
         self.timeToLie = timeToLie
 
     
