@@ -1,7 +1,7 @@
+from classes import *
 import pygame as pg
 from constants import *
 import os
-from classes import *
 import random as rd
 
 pg.init()
@@ -45,207 +45,22 @@ mål_kamera_x = kamera_x
 mål_kamera_y = kamera_y
 
 
-class SuspectSprite:
-    def __init__(self, x, y, person, bredde=60, høyde=100):
-        self.x = x
-        self.y = y
-        self.bredde = bredde
-        self.høyde = høyde
-        self.person = person  # The Person object from your Evening class
-        self.farge = person.color  # Random color for each suspect
-        self.outline_farge = tuple(c // 2 for c in self.farge)  # Darker version
-        
-    def draw(self, vindu):
-        """Tegner suspect sprite på skjermen"""
-        # Tegn skygge
-        skygge_offset = 3
-        pg.draw.rect(vindu, (0, 0, 0, 100),
-                     (self.x - self.bredde // 2 + skygge_offset,
-                     self.y - self.høyde // 2 + skygge_offset,
-                     self.bredde,
-                     self.høyde))
-        
-        # Tegn hovedrektangel
-        pg.draw.rect(vindu, self.farge,
-                     (self.x - self.bredde // 2,
-                      self.y - self.høyde // 2,
-                      self.bredde,
-                      self.høyde))
-        
-        # Tegn outline
-        pg.draw.rect(vindu, self.outline_farge,
-                     (self.x - self.bredde // 2,
-                      self.y - self.høyde // 2,
-                      self.bredde,
-                      self.høyde), 3)
-        
-        # Tegn øyne
-        øye_farge = (255, 255, 255)
-        øye_størrelse = 6
-        øye_y = self.y - 20
-        
-        # Venstre øye
-        pg.draw.circle(vindu, øye_farge,
-                       (int(self.x - 10), int(øye_y)), øye_størrelse)
-        pg.draw.circle(vindu, (0, 0, 0),
-                       (int(self.x - 10), int(øye_y)), øye_størrelse // 2)
-        
-        # Høyre øye
-        pg.draw.circle(vindu, øye_farge,
-                       (int(self.x + 10), int(øye_y)), øye_størrelse)
-        pg.draw.circle(vindu, (0, 0, 0),
-                       (int(self.x + 10), int(øye_y)), øye_størrelse // 2)
-        
-        # Tegn navn under sprite
-        font = pg.font.Font(None, 24)
-        name_text = font.render(str(self.person), True, WHITE)
-        name_rect = name_text.get_rect(center=(self.x, self.y + self.høyde // 2 + 20))
-        
-        # Bakgrunn bak navnet
-        bg_rect = name_rect.inflate(10, 5)
-        s = pg.Surface((bg_rect.width, bg_rect.height), pg.SRCALPHA)
-        s.fill((0, 0, 0, 180))
-        vindu.blit(s, bg_rect.topleft)
-        
-        # Tegn navnet
-        vindu.blit(name_text, name_rect)
-
-
-class Door:
-    def __init__(self, x, y, bredde, høyde, navn="Dør", bakgrunn_fil=None, suspect=None) -> None:
-        self.x = x  # Verden-koordinater
-        self.y = y
-        self.bredde = bredde
-        self.høyde = høyde
-        self.navn = navn
-        self.bakgrunn_fil = bakgrunn_fil  # Nytt bakgrunnsbilde for denne døren
-        self.farge = (0, 255, 0, 100)  # Grønn med transparency
-        self.aktiv_farge = (255, 255, 0, 150)  # Gul når karakteren er nær
-        self.åpnet_farge = (255, 0, 0, 150)  # Rød når døren er åpnet
-        self.is_aktiv = False
-        self.er_åpnet = False
-        self.interaksjons_avstand = 100  # Hvor nær karakteren må være
-        self.suspect = suspect
-
-    def get_rect(self):
-        """Returnerer rektangel i verden-koordinater"""
-        return pg.Rect(self.x, self.y, self.bredde, self.høyde)
-
-    def check_karakter_nær(self, karakter_x, karakter_y):
-        """Sjekker om karakteren er nær nok til å interagere"""
-        # Beregn avstanden mellom karakteren og dørens senter
-        dør_senter_x = self.x + self.bredde // 2
-        dør_senter_y = self.y + self.høyde // 2
-
-        avstand_x = abs(karakter_x - dør_senter_x)
-        avstand_y = abs(karakter_y - dør_senter_y)
-
-        # Sjekk om karakteren er innenfor interaksjonsavstand
-        self.is_aktiv = (avstand_x < self.interaksjons_avstand and
-                         avstand_y < self.interaksjons_avstand)
-        return self.is_aktiv
-
-    def on_interact(self):
-        """Åpner/lukker døren og returnerer bakgrunnsfilnavnet"""
-        self.er_åpnet = not self.er_åpnet
-        status = "åpnet" if self.er_åpnet else "lukket"
-        print(f"{self.navn} er nå {status}!")
-        return self.bakgrunn_fil if self.er_åpnet else None
-
-    def draw(self, vindu, kamera_x, kamera_y, vis_rektangler=True):
-        """Tegner bare teksten når karakteren er nær"""
-        skjerm_x = self.x - kamera_x
-        skjerm_y = self.y - kamera_y
-
-        # Tegn bare tekst når karakteren er nær eller døren er åpnet
-        if self.is_aktiv or self.er_åpnet:
-            font = pg.font.Font(None, 36)
-
-            # "Trykk E for å åpne" eller "Trykk E for å lukke" tekst
-            if self.er_åpnet:
-                e_text = font.render("Trykk E for å lukke",
-                                     True, (255, 255, 255))
-            else:
-                e_text = font.render("Trykk E for å åpne",
-                                     True, (255, 255, 255))
-
-            e_rect = e_text.get_rect(center=(skjerm_x + self.bredde // 2,
-                                             skjerm_y + self.høyde // 2))
-
-            # Tegn halvgjennomsiktig bakgrunn bak teksten
-            bg_rect = e_rect.inflate(20, 10)
-            s = pg.Surface((bg_rect.width, bg_rect.height), pg.SRCALPHA)
-            s.fill((0, 0, 0, 180))
-            vindu.blit(s, bg_rect.topleft)
-
-            # Tegn teksten
-            vindu.blit(e_text, e_rect)
-
-class Character:
-    def __init__(self, x, y, bredde=50, høyde=80):
-        self.x = x  # Verden-koordinater
-        self.y = y
-        self.bredde = bredde
-        self.høyde = høyde
-        self.farge = (255, 0, 0)  # Rød
-        self.outline_farge = (150, 0, 0)  # Mørk rød
-        self.hastighet = 5
-
-    def get_skjerm_pos(self, kamera_x, kamera_y):
-        """Returnerer karakterens posisjon på skjermen"""
-        return self.x - kamera_x, self.y - kamera_y
-
-    def draw(self, vindu, kamera_x, kamera_y):
-        """Tegner karakteren på skjermen"""
-        skjerm_x, skjerm_y = self.get_skjerm_pos(kamera_x, kamera_y)
-
-        # Tegn skygge
-        skygge_offset = 3
-        pg.draw.rect(vindu, (0, 0, 0, 100),
-                     (skjerm_x - self.bredde // 2 + skygge_offset,
-                     skjerm_y - self.høyde // 2 + skygge_offset,
-                     self.bredde,
-                     self.høyde))
-
-        # Tegn hovedrektangel
-        pg.draw.rect(vindu, self.farge,
-                     (skjerm_x - self.bredde // 2,
-                      skjerm_y - self.høyde // 2,
-                      self.bredde,
-                      self.høyde))
-
-        # Tegn outline
-        pg.draw.rect(vindu, self.outline_farge,
-                     (skjerm_x - self.bredde // 2,
-                      skjerm_y - self.høyde // 2,
-                      self.bredde,
-                      self.høyde), 3)
-
-        # Tegn øyne
-        øye_farge = (255, 255, 255)
-        øye_størrelse = 8
-        øye_y = skjerm_y - 15
-
-        # Venstre øye
-        pg.draw.circle(vindu, øye_farge,
-                       (int(skjerm_x - 12), int(øye_y)), øye_størrelse)
-        pg.draw.circle(vindu, (0, 0, 0),
-                       (int(skjerm_x - 12), int(øye_y)), øye_størrelse // 2)
-
-        # Høyre øye
-        pg.draw.circle(vindu, øye_farge,
-                       (int(skjerm_x + 12), int(øye_y)), øye_størrelse)
-        pg.draw.circle(vindu, (0, 0, 0),
-                       (int(skjerm_x + 12), int(øye_y)), øye_størrelse // 2)
 
 def synk_kamera_med_karakter(karakter_x, verden_bredde):
     ideell_kamera_x = karakter_x - VINDU_BREDDE // 2
     return max(0, min(ideell_kamera_x, verden_bredde - VINDU_BREDDE))
 
+seenClicked = False
 def main():
     global kamera_x, kamera_y, mål_kamera_x, mål_kamera_y, bakgrunn, ny_bredde, ny_hoyde
 
     evening = Evening()
+    print(f"the characters are: {evening.characters}")
+    print(f"the murderer is: {evening.murderer}")
+    print(f"the victim is: {evening.victim}")
+    print(f"the time of death is: {evening.murderTime}")
+    print(f"the time to lie is: {evening.murderer.timeToLie}")
+
 
     running = True
     smooth_hastighet = 0.15  # For smooth kamerabevegelse
@@ -255,27 +70,54 @@ def main():
     åpen_dør = None
     current_suspect = None
 
+    button_y_start = 400
+    button_spacing = 70
+    button_bredde = 300
+    button_høyde = 50
+    button_x = (VINDU_BREDDE - button_bredde) // 2
+
+    whereWereYou_button = Button(button_x, button_y_start, button_bredde, button_høyde, 
+                                  "Where were you at...?")
+    haveYouSeen_button = Button(button_x, button_y_start + button_spacing, button_bredde, button_høyde,
+                                 "Have you seen...?")
+    haveMotive_button = Button(button_x, button_y_start + button_spacing * 2, button_bredde, button_høyde,
+                               "How was ...'s relationship with the victim?")
+    
+    dialog_box = DialogBox(50, 50, VINDU_BREDDE - 100, 150)
+    time_selector = TimeSelector(100, 150, evening.timestamps)
+    character_selector = CharacterSelector(100, 150, evening.suspects)
+
     # Opprett noen eksempel-dører med forskjellige bakgrunner
     # Alle dører åpner samme rom-fil
+
     dører = [
-        Door(100, 250, 225, 475, "Dør 1", "photos/room1.png", evening.characters[0]),
-        Door(420, 250, 215, 475, "Dør 2", "photos/room.png", evening.characters[1]),
-        Door(730, 250, 215, 475, "Dør 3", "photos/room.png", evening.characters[2]),
-        Door(1020, 250, 215, 475, "Dør 4", "photos/room.png", evening.characters[3]),
-        Door(1320, 250, 215, 475, "Dør 5", "photos/room.png", evening.characters[4]),
-        Door(1620, 250, 215, 475, "Dør 6", "photos/room.png", evening.characters[5]),
+        Door(100, 250, 225, 475, "Dør 1", "photos/room1.png", evening.suspects[0]),
+        Door(420, 250, 215, 475, "Dør 2", "photos/room.png", evening.suspects[1]),
+        Door(730, 250, 215, 475, "Dør 3", "photos/room.png", evening.suspects[2]),
+        Door(1020, 250, 215, 475, "Dør 4", "photos/room.png", evening.suspects[3]),
+        Door(1320, 250, 215, 475, "Dør 5", "photos/room.png", evening.suspects[4]),
+        Door(1620, 250, 215, 475, "Dør 6", "photos/room.png", evening.suspects[5]),
     ]
 
     # Opprett karakter i midten av verden
     karakter = Character(ny_bredde // 2, VINDU_HOYDE - 150)
 
+    seenClicked = False
     while running:
+        mouse_pos = pg.mouse.get_pos()
+        mouse_pressed = pg.mouse.get_pressed()
+
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
-                    running = False
+                    if time_selector.visible:
+                        time_selector.hide()
+                    elif character_selector.visible:
+                        character_selector.hide()
+                    else:
+                        running = False
                 elif event.key == pg.K_SPACE:
                     # Toggle visibility av rektangler med mellomrom
                     vis_rektangler = not vis_rektangler
@@ -296,16 +138,19 @@ def main():
 
                                     ny_bredde = VINDU_BREDDE
                                     ny_hoyde = VINDU_HOYDE
-
                                     current_background = ny_bakgrunn_fil
 
                                     current_suspect = SuspectSprite(
                                         VINDU_BREDDE // 2,  # Center of screen
                                         VINDU_HOYDE // 2,   # Center of screen
-                                        dør.suspect
+                                        dør.suspect # type: ignore
                                     )
+
                                     i_rom = True
                                     åpen_dør = dør
+                                    dialog_box.hide()
+                                    time_selector.hide()
+                                    character_selector.hide()
                                     kamera_x = 0
                                     kamera_y = 0
                                     mål_kamera_x = 0
@@ -323,10 +168,12 @@ def main():
                                     current_suspect = None 
                                     i_rom = False
                                     åpen_dør = None
+                                    dialog_box.hide()
+                                    time_selector.hide()
+                                    character_selector.hide()
 
                                     kamera_x = synk_kamera_med_karakter(karakter.x, ny_bredde)
                                     mål_kamera_x = kamera_x
-
                                     kamera_y = (ny_hoyde - VINDU_HOYDE) // 2
                                     mål_kamera_y = kamera_y
 
@@ -343,6 +190,44 @@ def main():
         # Håndter bevegelse med piltaster
         keys = pg.key.get_pressed()
 
+
+        if i_rom and current_suspect:
+            if time_selector.visible:
+                selected_time = time_selector.check_clicks(mouse_pos, mouse_pressed)
+                if selected_time:
+                # User selected a time, now get the response
+                    response = current_suspect.person.whereWereYou(selected_time, evening)
+                    dialog_box.set_text(response)
+                    time_selector.hide()
+
+            elif character_selector.visible:
+                selected_character = character_selector.check_clicks(mouse_pos, mouse_pressed)
+                if selected_character:
+                    if seenClicked:
+                        response = current_suspect.person.haveYouSeen(selected_character, evening)
+                        seenClicked = False
+                    else:
+                        response = current_suspect.person.haveMotive(selected_character, evening)
+                    dialog_box.set_text(response)
+                    character_selector.buttons = []
+                    character_selector.hide()
+                    
+            else: 
+                whereWereYou_button.check_hover(mouse_pos)
+                haveYouSeen_button.check_hover(mouse_pos)
+                haveMotive_button.check_hover(mouse_pos)
+
+                if whereWereYou_button.is_clicked(mouse_pos, mouse_pressed):
+                    time_selector.show()
+
+                if haveYouSeen_button.is_clicked(mouse_pos, mouse_pressed):
+                    seenClicked = True
+                    character_selector.show(current_suspect.person)
+
+                if haveMotive_button.is_clicked(mouse_pos, mouse_pressed):
+                    seenClicked = False
+                    character_selector.show(current_suspect.person)
+            
         if not i_rom:
             if keys[pg.K_LEFT] or keys[pg.K_a]:
                 karakter.x -= karakter.hastighet
@@ -391,6 +276,7 @@ def main():
         if i_rom:
             # I rommet, ingen kamera-offset
             vindu.blit(bakgrunn, (0, 0))
+
         else:
             # Ved dørene, bruk kamera-offset
             vindu.blit(bakgrunn, (-kamera_x, -kamera_y))
@@ -404,6 +290,15 @@ def main():
         if i_rom:
             if current_suspect:
                 current_suspect.draw(vindu)
+
+            if not time_selector.visible and not character_selector.visible:
+                whereWereYou_button.draw(vindu)
+                haveYouSeen_button.draw(vindu)
+                haveMotive_button.draw(vindu)
+
+            dialog_box.draw(vindu)
+            time_selector.draw(vindu)
+            character_selector.draw(vindu)
 
             pg.display.flip()
             clock.tick(FPS)
