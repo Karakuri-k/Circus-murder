@@ -134,7 +134,10 @@ class Person:
         seen = []
         for time in b.timestamps:
             if person.alibiSchedule[time] == self.alibiSchedule[time]:
-                seen.append(time)
+                if time not in self.timeToLie:
+                    seen.append(time)
+                else:
+                    pass
 
         if len(seen) == 0:
             return f"No, I don't believe i have seen {person} all night."
