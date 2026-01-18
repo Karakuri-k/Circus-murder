@@ -13,9 +13,6 @@ from constants import *
 #hva vet du om suspect (motiv)
 
 
-
-
-
 b = Evening()
 print(f"the characters are: {b.characters}")
 print(f"the murderer is: {b.murderer}")

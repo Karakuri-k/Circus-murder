@@ -9,7 +9,7 @@ vindu = pg.display.set_mode([VINDU_BREDDE, VINDU_HOYDE])
 pg.display.set_caption("Murder Mystery")
 clock = pg.time.Clock()
 
-# Last inn og skaler bakgrunnsbildet
+
 current_dir = os.path.dirname(__file__)
 
 
@@ -18,7 +18,6 @@ def load_and_scale_background(filename):
     bildesti = os.path.join(current_dir, filename)
     bakgrunn_original = pg.image.load(bildesti).convert()
 
-    # Strekk bildet mer i x-retningen (1.5x bredde) og zoom inn (1.3x totalt)
     ny_bredde = int(VINDU_BREDDE * 2)
     ny_hoyde = int(VINDU_HOYDE * 1.4)
     return pg.transform.scale(bakgrunn_original, (ny_bredde, ny_hoyde))
@@ -30,17 +29,14 @@ def load_room_background(filename):
     return pg.transform.scale(bilde, (VINDU_BREDDE, VINDU_HOYDE))
 
 
-# Last inn hovedbakgrunn
 MAIN_BACKGROUND = "photos/doors.png"
 bakgrunn = load_and_scale_background(MAIN_BACKGROUND)
 ny_bredde = bakgrunn.get_width()
 ny_hoyde = bakgrunn.get_height()
 
-# Kamera offset (startposisjon sentrert)
 kamera_x = (ny_bredde - VINDU_BREDDE) // 2
 kamera_y = (ny_hoyde - VINDU_HOYDE) // 2
 
-# Variabler for smooth kamerabevegelse
 mål_kamera_x = kamera_x
 mål_kamera_y = kamera_y
 
@@ -63,9 +59,9 @@ def main():
 
 
     running = True
-    smooth_hastighet = 0.15  # For smooth kamerabevegelse
-    vis_rektangler = True  # Toggle for å vise/skjule rektangler
-    current_background = MAIN_BACKGROUND  # Hold styr på gjeldende bakgrunn
+    smooth_hastighet = 0.15  
+    vis_rektangler = True  
+    current_background = MAIN_BACKGROUND  
     i_rom = False
     åpen_dør = None
     current_suspect = None
@@ -87,8 +83,7 @@ def main():
     time_selector = TimeSelector(100, 150, evening.timestamps)
     character_selector = CharacterSelector(100, 150, evening.suspects)
 
-    # Opprett noen eksempel-dører med forskjellige bakgrunner
-    # Alle dører åpner samme rom-fil
+
 
     dører = [
         Door(100, 250, 225, 475, "Dør 1", "photos/room1.png", evening.suspects[0]),
@@ -99,7 +94,7 @@ def main():
         Door(1620, 250, 215, 475, "Dør 6", "photos/room.png", evening.suspects[5]),
     ]
 
-    # Opprett karakter i midten av verden
+  
     karakter = Character(ny_bredde // 2, VINDU_HOYDE - 150)
 
     seenClicked = False
@@ -119,21 +114,16 @@ def main():
                     else:
                         running = False
                 elif event.key == pg.K_SPACE:
-                    # Toggle visibility av rektangler med mellomrom
+               
                     vis_rektangler = not vis_rektangler
                 elif event.key == pg.K_e:
-                    # Sjekk om karakteren er ved en dør
                     for dør in dører:
                         if dør.is_aktiv:
                             ny_bakgrunn_fil = dør.on_interact()
-
-                            # Hvis døren åpnes (ny_bakgrunn_fil er ikke None), last inn rom
-                            # Hvis døren lukkes (ny_bakgrunn_fil er None), gå tilbake til hovedbakgrunn
                             bakgrunn_fil_å_laste = ny_bakgrunn_fil if ny_bakgrunn_fil else MAIN_BACKGROUND
                             try:
                                 if ny_bakgrunn_fil:
                                 
-                                # Åpner dør → LAST ROM
                                     bakgrunn = load_room_background(ny_bakgrunn_fil)
 
                                     ny_bredde = VINDU_BREDDE
@@ -141,8 +131,8 @@ def main():
                                     current_background = ny_bakgrunn_fil
 
                                     current_suspect = SuspectSprite(
-                                        VINDU_BREDDE // 2,  # Center of screen
-                                        VINDU_HOYDE // 2,   # Center of screen
+                                        VINDU_BREDDE // 2, 
+                                        VINDU_HOYDE // 2, 
                                         dør.suspect # type: ignore
                                     )
 
@@ -159,7 +149,6 @@ def main():
                                     print("Gikk inn i rom")
 
                                 else:
-                                    # Lukker dør → TILBAKE TIL HOVEDBAKGRUNN
                                     bakgrunn = load_and_scale_background(MAIN_BACKGROUND)
                                     ny_bredde = bakgrunn.get_width()
                                     ny_hoyde = bakgrunn.get_height()
@@ -187,7 +176,6 @@ def main():
                                     f"Kunne ikke laste bakgrunn {bakgrunn_fil_å_laste}: {e}")
                             break
                         
-        # Håndter bevegelse med piltaster
         keys = pg.key.get_pressed()
 
 
@@ -195,7 +183,6 @@ def main():
             if time_selector.visible:
                 selected_time = time_selector.check_clicks(mouse_pos, mouse_pressed)
                 if selected_time:
-                # User selected a time, now get the response
                     response = current_suspect.person.whereWereYou(selected_time, evening)
                     dialog_box.set_text(response)
                     time_selector.hide()
@@ -238,50 +225,36 @@ def main():
                 karakter.x = min(ny_bredde - karakter.bredde // 2, karakter.x)
 
 
-        # Beregn hvor kameraet skal være for å holde karakteren sentrert
         ideell_kamera_x = karakter.x - VINDU_BREDDE // 2
 
-        # Begrens kameraet til bildet
         begrenset_kamera_x = max(
             0, min(ideell_kamera_x, ny_bredde - VINDU_BREDDE))
 
-        # Sjekk om kameraet er ved kanten
         kamera_ved_venstre_kant = (begrenset_kamera_x == 0)
         kamera_ved_høyre_kant = (begrenset_kamera_x ==
                                  ny_bredde - VINDU_BREDDE)
 
-        # Sjekk om karakteren er i midten av skjermen
         karakter_skjerm_x = karakter.x - kamera_x
         karakter_i_midten = abs(karakter_skjerm_x - VINDU_BREDDE // 2) < 10
 
-        # Oppdater kameramål
         if kamera_ved_venstre_kant or kamera_ved_høyre_kant:
-            # Kameraet er ved kanten
             if karakter_i_midten:
-                # Karakteren er tilbake i midten, la kameraet følge igjen
                 mål_kamera_x = begrenset_kamera_x
         else:
-            # Kameraet er ikke ved kanten, følg alltid karakteren
             mål_kamera_x = begrenset_kamera_x
 
-        # Begrens mål-kameraet
         mål_kamera_x = max(0, min(mål_kamera_x, ny_bredde - VINDU_BREDDE))
         mål_kamera_y = max(0, min(mål_kamera_y, ny_hoyde - VINDU_HOYDE))
 
-        # Smooth kamerabevegelse mot målet
         kamera_x += (mål_kamera_x - kamera_x) * smooth_hastighet
         kamera_y += (mål_kamera_y - kamera_y) * smooth_hastighet
 
-        # Tegn bakgrunnen med kamera-offset
         if i_rom:
-            # I rommet, ingen kamera-offset
             vindu.blit(bakgrunn, (0, 0))
 
         else:
-            # Ved dørene, bruk kamera-offset
             vindu.blit(bakgrunn, (-kamera_x, -kamera_y))
 
-        # Sjekk om karakteren er nær noen dører og tegn dem
         for dør in dører:
             if not i_rom:
                 dør.check_karakter_nær(karakter.x, karakter.y)
@@ -304,7 +277,6 @@ def main():
             clock.tick(FPS)
             continue
 
-        # Tegn karakteren
         if i_rom:
             
             vindu.blit(bakgrunn, (0, 0))

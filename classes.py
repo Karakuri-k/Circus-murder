@@ -178,9 +178,9 @@ class SuspectSprite:
         self.y = y
         self.bredde = bredde
         self.høyde = høyde
-        self.person = person  # The Person object from your Evening class
-        self.farge = person.color  # Random color for each suspect
-        self.outline_farge = tuple(c // 2 for c in self.farge)  # Darker version
+        self.person = person
+        self.farge = person.color 
+        self.outline_farge = tuple(c // 2 for c in self.farge) 
         
     def draw(self, vindu):
         """Tegner suspect sprite på skjermen"""
@@ -211,35 +211,35 @@ class SuspectSprite:
         øye_størrelse = 6
         øye_y = self.y - 20
         
-        # Venstre øye
+        # Venstre øe
         pg.draw.circle(vindu, øye_farge,
                        (int(self.x - 10), int(øye_y)), øye_størrelse)
         pg.draw.circle(vindu, (0, 0, 0),
                        (int(self.x - 10), int(øye_y)), øye_størrelse // 2)
         
-        # Høyre øye
+        # Høyre 
         pg.draw.circle(vindu, øye_farge,
                        (int(self.x + 10), int(øye_y)), øye_størrelse)
         pg.draw.circle(vindu, (0, 0, 0),
                        (int(self.x + 10), int(øye_y)), øye_størrelse // 2)
         
-        # Tegn navn under sprite
+        # sprite navn
         font = pg.font.Font(None, 24)
         name_text = font.render(str(self.person), True, WHITE)
         name_rect = name_text.get_rect(center=(self.x, self.y + self.høyde // 2 + 20))
         
-        # Bakgrunn bak navnet
+        # Bakgrunn navn
         bg_rect = name_rect.inflate(10, 5)
         s = pg.Surface((bg_rect.width, bg_rect.height), pg.SRCALPHA)
         s.fill((0, 0, 0, 180))
         vindu.blit(s, bg_rect.topleft)
         
-        # Tegn navnet
+        #navn
         vindu.blit(name_text, name_rect)
 
 class Door:
     def __init__(self, x, y, bredde, høyde, navn="Dør", bakgrunn_fil=None, suspect = None) -> None:
-        self.x = x  # Verden-koordinater
+        self.x = x  
         self.y = y
         self.bredde = bredde
         self.høyde = høyde
@@ -283,11 +283,9 @@ class Door:
         skjerm_x = self.x - kamera_x
         skjerm_y = self.y - kamera_y
 
-        # Tegn bare tekst når karakteren er nær eller døren er åpnet
         if self.is_aktiv or self.er_åpnet:
             font = pg.font.Font(None, 36)
 
-            # "Trykk E for å åpne" eller "Trykk E for å lukke" tekst
             if self.er_åpnet:
                 e_text = font.render("Trykk E for å lukke",
                                      True, (255, 255, 255))
@@ -298,7 +296,7 @@ class Door:
             e_rect = e_text.get_rect(center=(skjerm_x + self.bredde // 2,
                                              skjerm_y + self.høyde // 2))
 
-            # Tegn halvgjennomsiktig bakgrunn bak teksten
+            #bakgrunn
             bg_rect = e_rect.inflate(20, 10)
             s = pg.Surface((bg_rect.width, bg_rect.height), pg.SRCALPHA)
             s.fill((0, 0, 0, 180))
@@ -324,7 +322,7 @@ class Button:
         pg.draw.rect(vindu, current_farge, self.rect)
         pg.draw.rect(vindu, WHITE, self.rect, 2)  # Border
         
-        # Tegn tekst
+        # Tekst
         font = pg.font.Font(None, 28)
         text_surface = font.render(self.tekst, True, WHITE)
         text_rect = text_surface.get_rect(center=self.rect.center)
@@ -391,7 +389,6 @@ class TimeSelector:
         self.buttons = []
         self.selected_time = None
         
-        # Create buttons for each timestamp
         button_width = 120
         button_height = 40
         buttons_per_row = 5
@@ -428,18 +425,15 @@ class TimeSelector:
         if not self.visible:
             return
         
-        # Draw semi-transparent background
         overlay = pg.Surface((VINDU_BREDDE, VINDU_HOYDE), pg.SRCALPHA)
         overlay.fill((0, 0, 0, 200))
         vindu.blit(overlay, (0, 0))
         
-        # Draw title
         font = pg.font.Font(None, 36)
         title = font.render("Select a time:", True, WHITE)
         title_rect = title.get_rect(center=(VINDU_BREDDE // 2, self.y - 40))
         vindu.blit(title, title_rect)
         
-        # Draw all time buttons
         for button in self.buttons:
             button.draw(vindu)
 
@@ -488,24 +482,21 @@ class CharacterSelector:
         if not self.visible:
             return
         
-        # Draw semi-transparent background
         overlay = pg.Surface((VINDU_BREDDE, VINDU_HOYDE), pg.SRCALPHA)
         overlay.fill((0, 0, 0, 200))
         vindu.blit(overlay, (0, 0))
         
-        # Draw title
         font = pg.font.Font(None, 36)
         title = font.render("Select a suspect:", True, WHITE)
         title_rect = title.get_rect(center=(VINDU_BREDDE // 2, self.y - 40))
         vindu.blit(title, title_rect)
         
-        # Draw all time buttons
         for button in self.buttons:
             button.draw(vindu)
 
 class Character:
     def __init__(self, x, y, bredde=50, høyde=80):
-        self.x = x  # Verden-koordinater
+        self.x = x
         self.y = y
         self.bredde = bredde
         self.høyde = høyde
@@ -548,13 +539,13 @@ class Character:
         øye_størrelse = 8
         øye_y = skjerm_y - 15
 
-        # Venstre øye
+        # Venstre øie
         pg.draw.circle(vindu, øye_farge,
                        (int(skjerm_x - 12), int(øye_y)), øye_størrelse)
         pg.draw.circle(vindu, (0, 0, 0),
                        (int(skjerm_x - 12), int(øye_y)), øye_størrelse // 2)
 
-        # Høyre øye
+        # Høyre 
         pg.draw.circle(vindu, øye_farge,
                        (int(skjerm_x + 12), int(øye_y)), øye_størrelse)
         pg.draw.circle(vindu, (0, 0, 0),
